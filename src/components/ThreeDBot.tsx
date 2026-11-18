@@ -1,282 +1,136 @@
-// src/components/ThreeDBot.tsx
-
-import { useRef, useState, useEffect, Suspense } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import type { ThreeEvent } from "@react-three/fiber";
-import { Environment, Sphere, Plane } from "@react-three/drei";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import * as THREE from "three";
-import type { SectionId } from "../types";
-import TypewriterMessage from "./TypewriterMessage";
+import { FiMessageSquare, FiX } from "react-icons/fi";
+import type { BotState, SectionId } from "../types";
+import { SECTION_GREETINGS } from "../data/botKnowledge";
 
-// --- Component ของตัว Bot ---
-function BotModel({
-  targetPosition,
-  setBotPixelPos,
-  setMode,
-}: {
-  targetPosition: THREE.Vector3;
-  setBotPixelPos: (pos: { x: number; y: number }) => void;
-  setMode: (mode: "guide" | "dragging") => void;
-}) {
-  const meshRef = useRef<THREE.Mesh>(null!);
-  const { camera, gl } = useThree();
+const LazyBotCanvas = lazy(() => import("./BotCanvas"));
 
-  useFrame((_, delta) => {
-    if (!meshRef.current) return;
-
-    // เคลื่อนเข้าเป้าหมายลื่นๆ
-    meshRef.current.position.lerp(targetPosition, 0.05);
-
-    // หมุนช้าๆ
-    meshRef.current.rotation.y += delta * 0.2;
-    meshRef.current.rotation.x += delta * 0.1;
-
-    // project เป็นพิกัด pixel บนจอ
-    const ndc = meshRef.current.position.clone().project(camera);
-    const rect = (gl.domElement as HTMLCanvasElement).getBoundingClientRect();
-    const x = rect.left + (ndc.x * 0.5 + 0.5) * rect.width;
-    const y = rect.top + (-ndc.y * 0.5 + 0.5) * rect.height;
-    setBotPixelPos({ x, y });
-  });
-
-  const setCursor = (value: string) => {
-    document.body.style.cursor = value;
-  };
-
-  return (
-    <Sphere
-      ref={meshRef}
-      args={[0.5, 32, 32]}
-      scale={0.6}
-      onPointerDown={(e: ThreeEvent<PointerEvent>) => {
-        e.stopPropagation();
-        setMode("dragging");
-        setCursor("grabbing");
-      }}
-      onPointerUp={(e: ThreeEvent<PointerEvent>) => {
-        e.stopPropagation();
-        setMode("guide");
-        setCursor("grab");
-      }}
-      onPointerEnter={() => setCursor("grab")}
-      onPointerLeave={() => setCursor("auto")}
-    >
-      <meshStandardMaterial
-        color="#00ffff"
-        emissive="#00ffff"
-        emissiveIntensity={0.5}
-        wireframe
-      />
-    </Sphere>
-  );
+interface ThreeDBotProps {
+  currentSection: SectionId;
+  botState: BotState;
+  isChatOpen: boolean;
+  onToggleChat: () => void;
 }
 
-// --- Component จัดการฉาก ---
-function SceneContent({
-  mode,
-  setMode,
-  setBotPixelPos,
-}: {
-  mode: "guide" | "dragging";
-  setMode: (mode: "guide" | "dragging") => void;
-  setBotPixelPos: (pos: { x: number; y: number }) => void;
-}) {
-  const { viewport } = useThree();
-  const mouse3DPos = useRef(new THREE.Vector3(0, 0, 0));
-  const targetPosition = new THREE.Vector3();
-
-  if (mode === "dragging") {
-    targetPosition.copy(mouse3DPos.current);
-  } else {
-    targetPosition.set(-viewport.width / 2.2, -0.5, 0);
-  }
-
-  return (
-    <>
-      <ambientLight intensity={1.5} />
-      <directionalLight position={[0, 10, 5]} intensity={3} />
-      <Environment preset="city" />
-
-      <BotModel
-        targetPosition={targetPosition}
-        setBotPixelPos={setBotPixelPos}
-        setMode={setMode}
-      />
-
-      {/* ระนาบสำหรับลาก (โปร่งใสแต่รับอีเวนต์ได้) */}
-      <Plane
-        args={[viewport.width * 2, viewport.height * 2]}
-        position={[0, 0, 0]}
-        onPointerMove={(e) => {
-          if (mode === "dragging") {
-            mouse3DPos.current.copy(e.point);
-          }
-        }}
-        onPointerUp={() => {
-          if (mode === "dragging") {
-            setMode("guide");
-            document.body.style.cursor = "grab";
-          }
-        }}
-      >
-        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
-      </Plane>
-    </>
-  );
-}
-
-// --- คลังคำพูด ---
-const sectionMessages: Record<SectionId, string> = {
-  home:
-    "ยินดีต้อนรับสู่ Portfolio ของผม! (สามารถเปิดปิดฟังค์ชันบอทได้จากเมนูด้านบนหรือขีด3ขีด)",
-  about: "ในส่วนนี้ผมจะเล่าให้ฟังเกี่ยวกับตัวตนของผม",
-  skills: "นี่คือเทคโนโลยีและเครื่องมือที่ผมเชี่ยวชาญ",
-  projects:
-    "ชมผลงานที่ผมภูมิใจนำเสนอได้ที่นี่เลยครับ!(สามารถเปิดคลิกที่รูปProjectเพื่อดูรายละเอียดเพิ่มเติม)",
+const STATE_LABELS: Record<BotState, { text: string; dotClass: string }> = {
+  idle: { text: "AI Core Online", dotClass: "bg-[#00AEEF]" },
+  thinking: { text: "Routing Intent...", dotClass: "bg-amber-400 animate-pulse" },
+  speaking: { text: "Responding", dotClass: "bg-emerald-400 animate-pulse" },
 };
 
-// --- Component หลัก ThreeDBot ---
-const ThreeDBot = ({ currentSection }: { currentSection: SectionId }) => {
+export default function ThreeDBot({
+  currentSection,
+  botState,
+  isChatOpen,
+  onToggleChat,
+}: ThreeDBotProps) {
   const [enabled, setEnabled] = useState(true);
+  const [showBubble, setShowBubble] = useState(true);
+  const [mountedCanvas, setMountedCanvas] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
 
-  // toggle จาก Navbar
+  // Respect prefers-reduced-motion
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReducedMotion(mq.matches);
+    const onChange = (e: MediaQueryListEvent) => setReducedMotion(e.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+
+  // Defer 3D Canvas mount until after first paint so Hero LCP is unblocked
+  useEffect(() => {
+    const timer = window.setTimeout(() => setMountedCanvas(true), 250);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  // Listen to Navbar toggle event
   useEffect(() => {
     const handler = (e: Event) => {
       const ce = e as CustomEvent<boolean>;
       setEnabled(Boolean(ce.detail));
     };
     window.addEventListener("chatbot-toggle", handler as EventListener);
-    return () =>
-      window.removeEventListener("chatbot-toggle", handler as EventListener);
+    return () => window.removeEventListener("chatbot-toggle", handler as EventListener);
   }, []);
 
-  const [message, setMessage] = useState<string | null>(null);
-  const messageTimer = useRef<number | null>(null);
-  const [mode, setMode] = useState<"guide" | "dragging">("guide");
-  const [botPixelPos, setBotPixelPos] = useState({
-    x: 150,
-    y: typeof window !== "undefined" ? window.innerHeight / 2 : 360,
-  });
-  const [canvasInteractive, setCanvasInteractive] = useState(false);
-
-  // เคลียร์เมื่อปิดบอท
+  // Show contextual greeting briefly when section changes (if chat drawer is closed)
   useEffect(() => {
-    if (!enabled) {
-      if (messageTimer.current) clearTimeout(messageTimer.current);
-      setMessage(null);
-      setCanvasInteractive(false);
-      setMode("guide");
-      document.body.style.cursor = "auto";
-    }
-  }, [enabled]);
-
-  // อัปเดตข้อความเมื่อ section เปลี่ยนหรือโหมดเปลี่ยน
-  useEffect(() => {
-    if (!enabled) return;
-
-    if (mode === "guide") {
-      const newMessage = sectionMessages[currentSection];
-      setMessage(newMessage);
-      if (messageTimer.current) clearTimeout(messageTimer.current);
-      messageTimer.current = window.setTimeout(() => setMessage(null), 5000);
-    } else {
-      setMessage(null);
-      if (messageTimer.current) clearTimeout(messageTimer.current);
-    }
-  }, [currentSection, mode, enabled]);
-
-  // ปล่อย pointer เมื่อปล่อยเมาส์นอก canvas
-  useEffect(() => {
-    const onPointerUp = () => {
-      if (canvasInteractive) {
-        setCanvasInteractive(false);
-        setMode("guide");
-        document.body.style.cursor = "auto";
-      }
-    };
-    window.addEventListener("pointerup", onPointerUp);
-    return () => window.removeEventListener("pointerup", onPointerUp);
-  }, [canvasInteractive]);
+    if (!enabled || isChatOpen) return;
+    setShowBubble(true);
+    const timer = window.setTimeout(() => setShowBubble(false), 5500);
+    return () => window.clearTimeout(timer);
+  }, [currentSection, enabled, isChatOpen]);
 
   if (!enabled) return null;
 
-  return (
-    <div
-      className={`fixed inset-0 z-50 ${
-        canvasInteractive ? "pointer-events-auto" : "pointer-events-none"
-      }`}
-    >
-      <Canvas
-        camera={{ position: [0, 0, 5], fov: 60 }}
-        style={{ pointerEvents: canvasInteractive ? "auto" : "none" }}
-      >
-        <Suspense fallback={null}>
-          <SceneContent
-            mode={mode}
-            setMode={setMode}
-            setBotPixelPos={setBotPixelPos}
-          />
-        </Suspense>
-      </Canvas>
+  const status = STATE_LABELS[botState];
 
+  return (
+    <div className="fixed bottom-5 right-5 z-40 flex flex-col items-end gap-3 pointer-events-none">
+      {/* Contextual Speech Bubble */}
       <AnimatePresence>
-        {message && (
+        {showBubble && !isChatOpen && (
           <motion.div
-            className="absolute max-w-xs p-4 
-                       bg-sky-900/50 backdrop-blur-md 
-                       border border-sky-400 rounded-lg 
-                       shadow-2xl shadow-sky-500/20 
-                       font-mono-tech text-slate-100
-                       pointer-events-none"
-            style={{ left: botPixelPos.x + 20, top: botPixelPos.y - 120 }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+            initial={{ opacity: 0, y: 12, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 8, scale: 0.95 }}
+            transition={{ duration: 0.25 }}
+            className="pointer-events-auto relative max-w-[280px] sm:max-w-xs rounded-2xl border border-[#00AEEF]/40 bg-[#0A192F]/90 p-3.5 pr-8 text-xs sm:text-sm leading-relaxed text-slate-100 shadow-2xl shadow-[#00AEEF]/15 backdrop-blur-xl"
           >
-            <TypewriterMessage text={message} />
+            <button
+              type="button"
+              onClick={() => setShowBubble(false)}
+              aria-label="Dismiss bot message"
+              className="absolute right-2.5 top-2.5 text-slate-400 hover:text-white transition-colors"
+            >
+              <FiX size={14} />
+            </button>
+            <p className="font-mono text-[10px] uppercase tracking-wider text-[#38BDF8] mb-1">
+              Pattle AI Guide · #{currentSection}
+            </p>
+            <p>{SECTION_GREETINGS[currentSection]}</p>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Hitbox จับลาก/คลิก */}
-      <div
-        className="absolute"
-        style={{
-          left: botPixelPos.x - 28,
-          top: botPixelPos.y - 28,
-          width: 56,
-          height: 56,
-          zIndex: 60,
-          pointerEvents: "auto",
-          cursor: canvasInteractive ? "grabbing" : "grab",
-        }}
-        onPointerDown={(e) => {
-          e.stopPropagation();
-          setCanvasInteractive(true);
-          setMode("dragging");
-          document.body.style.cursor = "grabbing";
-        }}
-        onClick={(e) => {
-          e.stopPropagation();
-          if (!canvasInteractive) {
-            setMode("guide");
-            const text = sectionMessages[currentSection];
-            setMessage(text);
-            if (messageTimer.current) clearTimeout(messageTimer.current);
-            messageTimer.current = window.setTimeout(() => setMessage(null), 3000);
-          }
-        }}
+      {/* 3D AI Core Floating Trigger */}
+      <motion.button
+        type="button"
+        onClick={onToggleChat}
+        aria-label={isChatOpen ? "Close AI Agent Chat" : "Open AI Agent Chat"}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.96 }}
+        className="pointer-events-auto group relative flex items-center gap-3 rounded-full border border-[#00AEEF]/45 bg-[#0A192F]/90 p-2 pr-4 shadow-2xl shadow-[#00AEEF]/25 backdrop-blur-xl transition-colors hover:border-[#38BDF8]"
       >
-        {canvasInteractive ? (
-          <div style={{ width: 14, height: 14, borderRadius: 7, background: "#06b6d4" }} />
-        ) : (
-          <div style={{ width: 0, height: 0 }} />
-        )}
-      </div>
+        <div className="relative h-14 w-14 overflow-hidden rounded-full bg-[#060D1A] border border-[#00AEEF]/30 flex items-center justify-center">
+          {mountedCanvas ? (
+            <Suspense
+              fallback={
+                <div className="h-8 w-8 rounded-full bg-[#00AEEF]/30 border border-[#38BDF8] animate-pulse" />
+              }
+            >
+              <LazyBotCanvas botState={botState} reducedMotion={reducedMotion} />
+            </Suspense>
+          ) : (
+            <div className="h-8 w-8 rounded-full bg-[#00AEEF]/30 border border-[#38BDF8] animate-pulse" />
+          )}
+        </div>
+
+        <div className="text-left">
+          <div className="flex items-center gap-1.5">
+            <span className={`h-2 w-2 rounded-full ${status.dotClass}`} />
+            <span className="font-mono text-[11px] font-semibold text-[#38BDF8]">
+              {status.text}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-100 group-hover:text-white mt-0.5">
+            <FiMessageSquare size={13} className="text-[#00AEEF]" />
+            <span>{isChatOpen ? "Close Chat" : "Ask Pattle AI"}</span>
+          </div>
+        </div>
+      </motion.button>
     </div>
   );
-};
-
-export default ThreeDBot;
+}

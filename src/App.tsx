@@ -1,69 +1,146 @@
-// src/App.tsx
-
-import { useState, useEffect } from 'react';
-import Navbar from './components/Navbar';
-import Hero from './components/Hero';
-import About from './components/About';
-import Skills from './components/Skills';
-import Projects from './components/Projects';
-import Footer from './components/Footer';
-import ThreeDBot from './components/ThreeDBot'; // 1. Import Bot กลับเข้ามา
-import type { SectionId } from './types';         // 2. Import Type ที่เราแยกไว้
+import { useState, useEffect, useCallback } from "react";
+import Navbar from "./components/Navbar";
+import Hero from "./components/Hero";
+import About from "./components/About";
+import Skills from "./components/Skills";
+import Projects from "./components/Projects";
+import Footer from "./components/Footer";
+import ThreeDBot from "./components/ThreeDBot";
+import ChatDrawer from "./components/ChatDrawer";
+import AmbientBackground from "./components/AmbientBackground";
+import CommandPalette from "./components/CommandPalette";
+import QuickBriefModal from "./components/QuickBriefModal";
+import type { BotState, ProjectCategory, SectionId } from "./types";
 
 function App() {
-  const [activeSection, setActiveSection] = useState<SectionId>('home');
+  const [activeSection, setActiveSection] = useState<SectionId>("home");
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isCommandOpen, setIsCommandOpen] = useState(false);
+  const [isBriefOpen, setIsBriefOpen] = useState(false);
+  const [botState, setBotState] = useState<BotState>("idle");
+  const [projectFilter, setProjectFilter] = useState<ProjectCategory>("All");
+  const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
+  const [queuedPrompt, setQueuedPrompt] = useState<string | null>(null);
 
-  // --- "สมอง" (useEffect) ฉบับแก้ไขที่ป้องกันหน้าจอขาว ---
   useEffect(() => {
-    const sectionIds: SectionId[] = ['home', 'about', 'skills', 'projects'];
+    const handleShortcut = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setIsCommandOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleShortcut);
+    return () => window.removeEventListener("keydown", handleShortcut);
+  }, []);
+
+  useEffect(() => {
+    const sectionIds: SectionId[] = ["home", "about", "skills", "projects"];
 
     const handleScroll = () => {
       const scrollY = window.scrollY;
-      const innerHeight = window.innerHeight;
-      
-      // *** นี่คือจุดที่แก้ไข ***
-      // เราย้ายการ "ค้นหา" มาไว้ข้างในนี้
-      // เพื่อให้แน่ใจว่ามันจะหาเจอหลังจากที่หน้าเว็บโหลดเสร็จแล้ว
-      const sections = sectionIds.map(id => document.getElementById(id));
-      
-      let currentSection: SectionId = 'home';
+      const offset = window.innerHeight * 0.4;
+      let currentSection: SectionId = "home";
 
-      for (const section of sections) {
-        if (section) { // เช็คว่าหาเจอ (กัน Error)
-          const sectionTop = section.offsetTop - innerHeight / 2; 
-          if (scrollY >= sectionTop) {
-            currentSection = section.id as SectionId;
-          }
+      for (const id of sectionIds) {
+        const el = document.getElementById(id);
+        if (el && scrollY >= el.offsetTop - offset) {
+          currentSection = id;
         }
       }
-      
       setActiveSection(currentSection);
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []); // [] หมายความว่าให้ "สมอง" นี้ทำงานแค่ครั้งเดียวตอนเปิดหน้า
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
+  const scrollToSection = useCallback((section: SectionId) => {
+    const el = document.getElementById(section);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+    }
+  }, []);
+
+  const handleOpenProject = useCallback((projectId: number) => {
+    setProjectFilter("All");
+    setSelectedProjectId(projectId);
+    const el = document.getElementById("projects");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+    }
+  }, []);
+
+  const handleAskAiAboutProject = useCallback((projectTitle: string) => {
+    setQueuedPrompt(`ช่วยอธิบายจุดเด่นและโปรเจกต์ "${projectTitle}" ให้หน่อย`);
+    setIsChatOpen(true);
+  }, []);
 
   return (
-    <div className="bg-[#0a192f] text-slate-200">
-      <Navbar />
+    <div className="relative min-h-screen bg-[#060D1A] text-slate-200">
+      <AmbientBackground />
 
-      <main className="container mx-auto px-8 md:px-14 lg:px-24 w-full">
-        {/* Component เหล่านี้ต้องมี id="home", "about", "skills", "projects" */}
-        <Hero />
+      <Navbar
+        activeSection={activeSection}
+        onOpenChat={() => setIsChatOpen(true)}
+        onOpenCommandPalette={() => setIsCommandOpen(true)}
+      />
+
+      <main className="relative z-10 container mx-auto px-6 md:px-12 lg:px-20 w-full">
+        <Hero
+          onOpenChat={() => setIsChatOpen(true)}
+          onOpenBrief={() => setIsBriefOpen(true)}
+        />
         <About />
         <Skills />
-        <Projects />
+        <Projects
+          activeFilter={projectFilter}
+          onFilterChange={setProjectFilter}
+          selectedProjectId={selectedProjectId}
+          onSelectProjectId={setSelectedProjectId}
+          onAskAiAboutProject={handleAskAiAboutProject}
+        />
       </main>
 
       <Footer />
-      
-      {/* 3. เรียกใช้ Bot และส่ง "คำสั่ง" (activeSection) ไปให้มัน */}
-      <ThreeDBot currentSection={activeSection} />
+
+      <ThreeDBot
+        currentSection={activeSection}
+        botState={botState}
+        isChatOpen={isChatOpen}
+        onToggleChat={() => setIsChatOpen((v) => !v)}
+      />
+
+      <ChatDrawer
+        isOpen={isChatOpen}
+        onClose={() => setIsChatOpen(false)}
+        botState={botState}
+        onBotStateChange={setBotState}
+        onScrollToSection={scrollToSection}
+        onFilterProjects={setProjectFilter}
+        onOpenProject={handleOpenProject}
+        initialPrompt={queuedPrompt}
+        onConsumeInitialPrompt={() => setQueuedPrompt(null)}
+      />
+
+      <CommandPalette
+        isOpen={isCommandOpen}
+        onClose={() => setIsCommandOpen(false)}
+        onScrollToSection={scrollToSection}
+        onFilterProjects={setProjectFilter}
+        onOpenProject={handleOpenProject}
+        onOpenChat={() => setIsChatOpen(true)}
+        onOpenBrief={() => setIsBriefOpen(true)}
+      />
+
+      <QuickBriefModal
+        isOpen={isBriefOpen}
+        onClose={() => setIsBriefOpen(false)}
+        onOpenChat={() => setIsChatOpen(true)}
+        onOpenProject={handleOpenProject}
+      />
     </div>
   );
 }
 
 export default App;
-

@@ -1,15 +1,91 @@
-/* เพิ่ม @import 2 บรรทัดนี้ไว้บนสุดของไฟล์ 
-  เพื่อดึงฟอนต์ Orbitron (สำหรับโลโก้) และ Share Tech Mono (สำหรับ font-mono-tech) 
-  มาจาก Google Fonts
-*/
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&display=swap');
-
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* (ถ้าคุณมี CSS อื่นๆ ที่เขียนไว้เอง ก็ให้มันอยู่ต่อจากตรงนี้ครับ)
-*/
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    font-family: "Plus Jakarta Sans", "Noto Sans Thai", system-ui, sans-serif;
+    background-color: #060d1a;
+    color: #e2e8f0;
+  }
+
+  body {
+    overflow-x: hidden;
+  }
+}
+
+.bg-grid-pattern {
+  background-size: 44px 44px;
+  background-image:
+    linear-gradient(to right, rgba(0, 174, 239, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 174, 239, 0.05) 1px, transparent 1px);
+}
+
+@keyframes aurora-drift-a {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(40px, 28px, 0) scale(1.06);
+  }
+}
+
+@keyframes aurora-drift-b {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(-44px, -24px, 0) scale(1.08);
+  }
+}
+
+.aurora-orb-1 {
+  animation: aurora-drift-a 24s ease-in-out infinite;
+  will-change: transform;
+}
+
+.aurora-orb-2 {
+  animation: aurora-drift-b 28s ease-in-out infinite;
+  will-change: transform;
+}
+
+.aurora-orb-3 {
+  animation: aurora-drift-a 32s ease-in-out infinite reverse;
+  will-change: transform;
+}
+
+/* Custom thin scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #060d1a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 174, 239, 0.28);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 174, 239, 0.5);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

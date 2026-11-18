@@ -3,44 +3,30 @@ export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
-      // 1. เพิ่ม fontFamily เข้าไป
+      colors: {
+        navy: {
+          deep: "#060D1A",
+          base: "#0A192F",
+          surface: "#0F213D",
+          elevated: "#13294B",
+        },
+        botnoi: {
+          cyan: "#00AEEF",
+          glow: "#38BDF8",
+          soft: "rgba(0, 174, 239, 0.14)",
+        },
+      },
       fontFamily: {
-        'orbitron': ['"Orbitron"', 'sans-serif'],
-        'mono-tech': ['"Share Tech Mono"', 'monospace'],
+        sans: ['"Plus Jakarta Sans"', '"Noto Sans Thai"', "system-ui", "sans-serif"],
+        display: ['"Plus Jakarta Sans"', '"Noto Sans Thai"', "system-ui", "sans-serif"],
+        mono: ['"JetBrains Mono"', '"Noto Sans Thai"', "monospace"],
       },
-
-      // (นี่คือ keyframes เดิมที่เราเคยทำไว้ ไม่ต้องลบครับ)
+      backgroundImage: {
+        "tech-grid":
+          "linear-gradient(to right, rgba(56, 189, 248, 0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(56, 189, 248, 0.06) 1px, transparent 1px)",
+      },
       animation: {
-        'border-spin': 'border-spin 7s linear infinite',
-        'glitch': 'glitch 0.5s linear infinite',
-        'noise': 'noise 0.5s linear infinite',
-      },
-      keyframes: {
-        'border-spin': {
-          '0%, 100%': { transform: 'rotate(0deg)' },
-          '100%': { transform: 'rotate(360deg)' },
-        },
-        'glitch': {
-          '0%': { clipPath: 'inset(10% 0 80% 0)' },
-          '20%': { clipPath: 'inset(90% 0 5% 0)' },
-          '40%': { clipPath: 'inset(45% 0 45% 0)' },
-          '60%': { clipPath: 'inset(15% 0 75% 0)' },
-          '80%': { clipPath: 'inset(85% 0 10% 0)' },
-          '100%': { clipPath: 'inset(50% 0 40% 0)' },
-        },
-        'noise': {
-            '0%': { transform: 'translate(0, 0)' },
-            '10%': { transform: 'translate(-5%, -5%)' },
-            '20%': { transform: 'translate(-10%, 5%)' },
-            '30%': { transform: 'translate(5%, -10%)' },
-            '40%': { transform: 'translate(-5%, 15%)' },
-            '50%': { transform: 'translate(-10%, 5%)' },
-            '60%': { transform: 'translate(15%, 0)' },
-            '70%': { transform: 'translate(0, 10%)' },
-            '80%': { transform: 'translate(-15%, 0)' },
-            '90%': { transform: 'translate(10%, 5%)' },
-            '100%': { transform: 'translate(5%, 0)' },
-        },
+        "pulse-slow": "pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
       },
     },
   },

@@ -1,87 +1,53 @@
-// src/components/Footer.tsx
-import { motion } from "framer-motion";
-import type { Variants } from "framer-motion";
 import { FaGithub, FaInstagram, FaFacebook } from "react-icons/fa";
-
-// Variants (ใส่ชนิด Variants ให้ TS ถูกต้อง)
-const footerVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.2 },
-  },
-};
-
-const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { type: "spring", stiffness: 100 },
-  },
-};
+import { profileData } from "../data/profile";
 
 const Footer = () => {
   return (
-    <motion.footer
-      variants={footerVariants}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.2 }}
-      className="py-5 border-t border-slate-500"
-    >
-      <div className="container mx-auto px-8 text-center py-10">
-        {/* Social Links */}
-        <motion.div className="flex justify-center gap-8 mb-6" variants={itemVariants}>
-          <motion.a
-            href="https://github.com/PCPzen"
+    <footer className="border-t border-white/10 bg-[#060D1A]/90 py-10">
+      <div className="container mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 px-6 md:px-12 lg:px-20 text-center sm:text-left">
+        <div>
+          <p className="font-bold text-slate-100">
+            {profileData.brandName}{" "}
+            <span className="font-mono text-xs text-[#38BDF8] ml-1">
+              · AI Agent Builder Portfolio
+            </span>
+          </p>
+          <p className="text-xs text-slate-400 mt-1">
+            &copy; {new Date().getFullYear()} {profileData.fullName} ({profileData.nickname}). Built with React, Three.js &amp; Tailwind CSS.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-5">
+          <a
+            href={profileData.socials.github}
             aria-label="GitHub"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-slate-400 hover:text-sky-400 transition-colors duration-300"
-            whileHover={{ y: -4, scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            transition={{ type: "spring", stiffness: 300 }}
+            className="text-slate-400 hover:text-[#38BDF8] transition-colors"
           >
-            <FaGithub size={28} />
-          </motion.a>
-
-          <motion.a
-            href="https://www.facebook.com/phatchararak.minimy"
+            <FaGithub size={20} />
+          </a>
+          <a
+            href={profileData.socials.facebook}
             aria-label="Facebook"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-slate-400 hover:text-sky-400 transition-colors duration-300"
-            whileHover={{ y: -4, scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            transition={{ type: "spring", stiffness: 300 }}
+            className="text-slate-400 hover:text-[#38BDF8] transition-colors"
           >
-            <FaFacebook size={28} />
-          </motion.a>
-
-          <motion.a
-            href="https://www.instagram.com/pattle___/"
+            <FaFacebook size={20} />
+          </a>
+          <a
+            href={profileData.socials.instagram}
             aria-label="Instagram"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-slate-400 hover:text-sky-400 transition-colors duration-300"
-            whileHover={{ y: -4, scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            transition={{ type: "spring", stiffness: 300 }}
+            className="text-slate-400 hover:text-[#38BDF8] transition-colors"
           >
-            <FaInstagram size={28} />
-          </motion.a>
-        </motion.div>
-
-        {/* Copyright */}
-        <motion.p className="text-slate-300 text-sm" variants={itemVariants}>
-          &copy; {new Date().getFullYear()} Tisara My portfolio. All rights reserved.
-        </motion.p>
-        <motion.p className="text-slate-300 text-xs mt-2" variants={itemVariants}>
-          Designed &amp; Built by Gemini_Pro@Tisara
-        </motion.p>
+            <FaInstagram size={20} />
+          </a>
+        </div>
       </div>
-    </motion.footer>
+    </footer>
   );
 };
 

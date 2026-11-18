@@ -10,7 +10,13 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+.env
+.env.*
+!.env.example
 *.local
+docs/
+web-team-v3/
+scripts/create_survey_forms.gs
 
 # Editor directories and files
 .vscode/*

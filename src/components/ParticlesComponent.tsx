@@ -16,9 +16,7 @@ const ParticlesComponent = () => {
     });
   }, []);
 
-  const particlesLoaded = async (_container: any): Promise<void> => {
-    // ใช้ _container เพื่อเลี่ยง TS6133 (ไม่ใช้งาน)
-  };
+  const particlesLoaded = async (): Promise<void> => {};
 
   if (!init) return null;
 

@@ -1,81 +1,74 @@
-// src/components/Navbar.tsx
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiMenu, FiX } from "react-icons/fi";
+import { FiMenu, FiX, FiMessageSquare, FiSearch } from "react-icons/fi";
 import ScrambledText from "./ScrambledText";
+import type { SectionId } from "../types";
 
-const navLinks = [
-  { name: "HOME", path: "#home" },
-  { name: "ABOUT", path: "#about" },
-  { name: "SKILLS", path: "#skills" },
-  { name: "PROJECTS", path: "#projects" },
+interface NavbarProps {
+  activeSection: SectionId;
+  onOpenChat: () => void;
+  onOpenCommandPalette: () => void;
+}
+
+const navLinks: Array<{ name: string; id: SectionId; path: string }> = [
+  { name: "HOME", id: "home", path: "#home" },
+  { name: "ABOUT", id: "about", path: "#about" },
+  { name: "SKILLS", id: "skills", path: "#skills" },
+  { name: "PROJECTS", id: "projects", path: "#projects" },
 ];
 
-const Navbar = () => {
+const Navbar = ({ activeSection, onOpenChat, onOpenCommandPalette }: NavbarProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [hoveredPath, setHoveredPath] = useState<string | null>(null);
-
-  // อ่าน active จาก hash (ไม่ผูกกับ react-router)
-  const [currentHash, setCurrentHash] = useState("#home");
-  useEffect(() => {
-    const sync = () => setCurrentHash(window.location.hash || "#home");
-    sync();
-    window.addEventListener("hashchange", sync);
-    return () => window.removeEventListener("hashchange", sync);
-  }, []);
-
-  // Toggle ChatBot -> broadcast ให้ ThreeDBot
+  const [hoveredId, setHoveredId] = useState<SectionId | null>(null);
   const [botEnabled, setBotEnabled] = useState(true);
+
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      window.dispatchEvent(new CustomEvent<boolean>("chatbot-toggle", { detail: botEnabled }));
-    }
+    window.dispatchEvent(new CustomEvent<boolean>("chatbot-toggle", { detail: botEnabled }));
   }, [botEnabled]);
 
   const handleLinkClick = () => setIsOpen(false);
 
   return (
     <motion.nav
-      initial={{ y: -100, opacity: 0 }}
+      initial={{ y: -80, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
-      className="fixed top-0 left-0 right-0 z-50 bg-[#0a192f]/80 backdrop-blur-md"
+      transition={{ duration: 0.45, ease: "easeOut" }}
+      className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-[#060D1A]/80 backdrop-blur-xl"
     >
-      <div className="container mx-auto px-8 md:px-14 lg:px-24 flex justify-between items-center h-20">
+      <div className="container mx-auto flex h-20 items-center justify-between px-6 md:px-12 lg:px-20">
         <a
           href="#home"
-          className="text-2xl font-bold font-orbitron text-slate-100 hover:text-sky-400 transition-colors hover:drop-shadow-[0_0_5px_rgba(0,194,255,0.7)]"
+          className="flex items-center gap-2.5 text-xl sm:text-2xl font-extrabold tracking-tight text-slate-100 hover:text-[#38BDF8] transition-colors"
         >
+          <span className="h-2.5 w-2.5 rounded-full bg-[#00AEEF] shadow-[0_0_10px_#00AEEF]" />
           <ScrambledText text="TisaraFolio" />
         </a>
 
-        {/* Desktop */}
-        <div className="hidden md:flex items-center space-x-8">
-          <ul className="flex items-center space-x-8">
+        {/* Desktop Nav */}
+        <div className="hidden lg:flex items-center gap-6">
+          <ul className="flex items-center gap-2">
             {navLinks.map((link) => {
-              const isActive = currentHash === link.path;
+              const isActive = activeSection === link.id;
               return (
                 <motion.li
-                  key={link.name}
-                  className="relative cursor-pointer py-2 px-3"
-                  onHoverStart={() => setHoveredPath(link.path)}
-                  onHoverEnd={() => setHoveredPath(null)}
-                  whileHover={{ scale: 1.05 }}
+                  key={link.id}
+                  className="relative px-3 py-2"
+                  onHoverStart={() => setHoveredId(link.id)}
+                  onHoverEnd={() => setHoveredId(null)}
                 >
                   <a
                     href={link.path}
-                    className={`relative z-10 text-slate-300 transition-colors ${
-                      isActive ? "text-sky-400 font-bold" : "hover:text-sky-400"
+                    className={`relative z-10 font-mono text-xs tracking-wider transition-colors ${
+                      isActive ? "text-[#38BDF8] font-bold" : "text-slate-300 hover:text-white"
                     }`}
                   >
                     {link.name}
                   </a>
-                  {(isActive || hoveredPath === link.path) && (
+                  {(isActive || hoveredId === link.id) && (
                     <motion.div
-                      layoutId="underline"
-                      className="absolute bottom-0 left-0 h-0.5 w-full bg-sky-500 rounded-full shadow-lg shadow-sky-500/50"
-                      initial={false}
-                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                      layoutId="nav-underline"
+                      className="absolute bottom-0 left-2 right-2 h-0.5 rounded-full bg-[#00AEEF]"
+                      transition={{ type: "spring", stiffness: 450, damping: 32 }}
                     />
                   )}
                 </motion.li>
@@ -83,31 +76,66 @@ const Navbar = () => {
             })}
           </ul>
 
-          {/* iPhone-like toggle + ชื่อหมวดหมู่ ChatBot (Desktop) */}
-          <div className="ml-2 flex items-center gap-2 select-none">
-            <span className="text-slate-300 text-sm tracking-wide">ChatBot</span>
+          {/* Command Palette Shortcut */}
+          <button
+            type="button"
+            onClick={onOpenCommandPalette}
+            title="Quick Jump (Ctrl+K)"
+            className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-slate-300 hover:border-[#00AEEF]/40 hover:text-white transition-colors"
+          >
+            <FiSearch size={13} className="text-[#38BDF8]" />
+            <span className="font-mono text-[11px] text-slate-400">Ctrl+K</span>
+          </button>
+
+          {/* Quick Chat CTA */}
+          <button
+            type="button"
+            onClick={onOpenChat}
+            className="inline-flex items-center gap-2 rounded-xl border border-[#00AEEF]/40 bg-[#00AEEF]/10 px-3.5 py-2 text-xs font-semibold text-[#38BDF8] hover:bg-[#00AEEF]/20 transition-colors"
+          >
+            <FiMessageSquare size={14} />
+            <span>Chat with AI</span>
+          </button>
+
+          {/* 3D Bot Toggle */}
+          <div className="flex items-center gap-2 select-none border-l border-white/10 pl-4">
+            <span className="font-mono text-xs text-slate-400">3D Bot</span>
             <button
               type="button"
               role="switch"
               aria-checked={botEnabled}
-              aria-label="Toggle ChatBot"
-              title="Toggle ChatBot"
+              aria-label="Toggle 3D AI Bot"
               onClick={() => setBotEnabled((v) => !v)}
-              className={`h-7 w-12 rounded-full transition-colors duration-200 border border-white/10 
-                ${botEnabled ? "bg-sky-500/80" : "bg-slate-600/60"}`}
+              className={`h-6 w-11 rounded-full border border-white/10 p-0.5 transition-colors duration-200 ${
+                botEnabled ? "bg-[#00AEEF]" : "bg-slate-700"
+              }`}
             >
               <span
-                className={`block h-6 w-6 bg-white rounded-full shadow transform transition-transform duration-200 
-                  ${botEnabled ? "translate-x-6" : "translate-x-0.5"}`}
+                className={`block h-5 w-5 rounded-full bg-white shadow transition-transform duration-200 ${
+                  botEnabled ? "translate-x-5" : "translate-x-0"
+                }`}
               />
             </button>
           </div>
         </div>
 
-        {/* Mobile toggler */}
-        <div className="md:hidden z-50">
-          <button onClick={() => setIsOpen(!isOpen)} className="text-slate-200">
-            {isOpen ? <FiX size={28} /> : <FiMenu size={28} />}
+        {/* Mobile Toggler */}
+        <div className="lg:hidden z-50 flex items-center gap-3">
+          <button
+            type="button"
+            onClick={onOpenChat}
+            aria-label="Open AI Chat"
+            className="rounded-lg border border-[#00AEEF]/40 bg-[#00AEEF]/10 p-2 text-[#38BDF8]"
+          >
+            <FiMessageSquare size={18} />
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsOpen((v) => !v)}
+            aria-label="Toggle Menu"
+            className="text-slate-200 p-1"
+          >
+            {isOpen ? <FiX size={26} /> : <FiMenu size={26} />}
           </button>
         </div>
       </div>
@@ -119,20 +147,22 @@ const Navbar = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="md:hidden fixed top-0 left-0 w-full h-screen bg-[#0a192f] flex flex-col justify-center items-center space-y-10"
+            className="lg:hidden fixed inset-0 top-20 z-40 flex flex-col items-center justify-center space-y-8 bg-[#060D1A]/95 backdrop-blur-xl"
           >
-            <ul className="flex flex-col items-center space-y-8">
+            <ul className="flex flex-col items-center space-y-6">
               {navLinks.map((link, index) => (
                 <motion.li
-                  key={link.name}
-                  initial={{ opacity: 0, y: 20 }}
+                  key={link.id}
+                  initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 * index }}
+                  transition={{ delay: 0.06 * index }}
                 >
                   <a
                     href={link.path}
                     onClick={handleLinkClick}
-                    className="text-3xl font-bold text-slate-300 hover:text-sky-400 transition-colors"
+                    className={`text-2xl font-bold transition-colors ${
+                      activeSection === link.id ? "text-[#38BDF8]" : "text-slate-200 hover:text-[#38BDF8]"
+                    }`}
                   >
                     {link.name}
                   </a>
@@ -140,22 +170,22 @@ const Navbar = () => {
               ))}
             </ul>
 
-            {/* Toggle (Mobile) + ป้าย ChatBot */}
-            <div className="flex items-center gap-3 mt-6">
-              <span className="text-slate-300">ChatBot</span>
+            <div className="flex items-center gap-3 pt-4 border-t border-white/10">
+              <span className="font-mono text-sm text-slate-300">3D AI Bot</span>
               <button
                 type="button"
                 role="switch"
                 aria-checked={botEnabled}
-                aria-label="Toggle ChatBot"
-                title="Toggle ChatBot"
+                aria-label="Toggle 3D AI Bot"
                 onClick={() => setBotEnabled((v) => !v)}
-                className={`h-8 w-14 rounded-full transition-colors duration-200 border border-white/10 
-                  ${botEnabled ? "bg-sky-500/80" : "bg-slate-600/60"}`}
+                className={`h-7 w-12 rounded-full border border-white/10 p-0.5 transition-colors duration-200 ${
+                  botEnabled ? "bg-[#00AEEF]" : "bg-slate-700"
+                }`}
               >
                 <span
-                  className={`block h-7 w-7 bg-white rounded-full shadow transform transition-transform duration-200 
-                    ${botEnabled ? "translate-x-7" : "translate-x-0.5"}`}
+                  className={`block h-6 w-6 rounded-full bg-white shadow transition-transform duration-200 ${
+                    botEnabled ? "translate-x-5" : "translate-x-0"
+                  }`}
                 />
               </button>
             </div>

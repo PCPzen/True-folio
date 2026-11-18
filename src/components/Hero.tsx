@@ -1,152 +1,208 @@
-// src/components/Hero.tsx
 import { motion } from "framer-motion";
 import type { Variants } from "framer-motion";
 import { TypeAnimation } from "react-type-animation";
 import Tilt from "react-parallax-tilt";
-import ParticlesComponent from "./ParticlesComponent";
-import { FaGithub, FaInstagram, FaMapMarkerAlt, FaFacebook } from "react-icons/fa";
+import {
+  FaGithub,
+  FaInstagram,
+  FaMapMarkerAlt,
+  FaFacebook,
+} from "react-icons/fa";
+import { FiArrowRight, FiMessageSquare, FiFileText } from "react-icons/fi";
+import { profileData } from "../data/profile";
 
-// Variants
+interface HeroProps {
+  onOpenChat: () => void;
+  onOpenBrief: () => void;
+}
+
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.3, delayChildren: 0.5 },
+    transition: { staggerChildren: 0.15, delayChildren: 0.15 },
   },
 };
+
 const itemVariantsLeft: Variants = {
-  hidden: { y: 20, opacity: 0 },
-  visible: { y: 0, opacity: 1, transition: { duration: 0.6 } },
+  hidden: { y: 18, opacity: 0 },
+  visible: { y: 0, opacity: 1, transition: { duration: 0.5 } },
 };
-// ใช้ ease เป็น cubic-bezier array เพื่อให้ TypeScript ผ่านแน่ ๆ
+
 const itemVariantsRight: Variants = {
-  hidden: { y: 20, opacity: 0 },
+  hidden: { y: 24, opacity: 0 },
   visible: {
     y: 0,
     opacity: 1,
-    transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] },
+    transition: { duration: 0.65, ease: [0.16, 1, 0.3, 1] },
   },
 };
 
-const Hero = () => {
+const Hero = ({ onOpenChat, onOpenBrief }: HeroProps) => {
   return (
-    <section id="home" className="relative min-h-screen flex items-center py-20 md:py-0">
-      <ParticlesComponent />
+    <section
+      id="home"
+      className="relative min-h-screen flex items-center pt-28 pb-16 md:py-24 overflow-hidden"
+    >
+      {/* Subtle Radial Glow */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 h-[420px] w-[720px] rounded-full bg-[#00AEEF]/12 blur-[120px]"
+      />
 
       <motion.div
-        className="container mx-auto px-8 md:px-14 lg:px-24 w-full flex flex-col md:flex-row items-center justify-between z-10"
+        className="relative z-10 w-full flex flex-col lg:flex-row items-center justify-between gap-12"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
       >
-        {/* Left text */}
-        <div className="text-center md:text-left max-w-2xl">
-          <motion.h1
-            className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-100"
-            variants={itemVariantsLeft}
-          >
-            Hello, I'm Pattle
-          </motion.h1>
-
-          <motion.div
-            className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-300 mt-4"
-            variants={itemVariantsLeft}
-          >
-            <TypeAnimation
-              sequence={[
-                "Frontend Developer",
-                2000,
-                "Web Designer",
-                2000,
-                "UX/UI Designer",
-                2000,
-                "Backend Developer",
-                2000,
-                "I'AM STUDENT",
-                2000,
-              ]}
-              wrapper="span"
-              speed={50}
-              className="text-sky-400"
-              repeat={Infinity}
-            />
+        {/* Left Narrative */}
+        <div className="text-center lg:text-left max-w-2xl">
+          {/* Live Status Badge */}
+          <motion.div variants={itemVariantsLeft} className="inline-flex mb-6">
+            <span className="inline-flex items-center gap-2 rounded-full border border-[#00AEEF]/40 bg-[#00AEEF]/10 px-4 py-1.5 font-mono text-xs font-medium text-[#38BDF8]">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+              </span>
+              {profileData.availabilityBadge}
+            </span>
           </motion.div>
 
-          <motion.p className="mt-6 text-slate-400 md:text-lg" variants={itemVariantsLeft}>
-            Hey there! I'm currently studying Computer Technology at Phrae Technical College.
-            Even though I'm still just a student, I've already got over a year of hands-on
-            experience in web development and basic system programming. I'm a great team player
-            and find it easy to collaborate with everyone. Since I started my journey, I've built
-            several projects that I'm excited to show you. Feel free to check them out!
+          <motion.h1
+            className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-100 leading-[1.12]"
+            variants={itemVariantsLeft}
+          >
+            Hi, I&apos;m <span className="text-[#00AEEF]">{profileData.nickname}</span>
+            <span className="block text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-300 mt-3">
+              <TypeAnimation
+                sequence={[
+                  "AI Agent Builder",
+                  2200,
+                  "Chatbot Flow Designer",
+                  2200,
+                  "Workflow Automation",
+                  2200,
+                  "System & Web Developer",
+                  2200,
+                ]}
+                wrapper="span"
+                speed={52}
+                className="text-[#38BDF8]"
+                repeat={Infinity}
+              />
+            </span>
+          </motion.h1>
+
+          <motion.p
+            className="mt-6 text-slate-300/90 text-base sm:text-lg leading-relaxed"
+            variants={itemVariantsLeft}
+          >
+            {profileData.heroBio}
           </motion.p>
 
-          <motion.div className="mt-8 flex justify-center md:justify-start gap-4" variants={itemVariantsLeft}>
+          {/* Dual CTAs */}
+          <motion.div
+            className="mt-8 flex flex-wrap justify-center lg:justify-start gap-4"
+            variants={itemVariantsLeft}
+          >
             <a
               href="#projects"
-              className="bg-sky-500 hover:bg-sky-600 text-white font-bold py-3 px-6 rounded-lg transition-transform duration-300 transform hover:scale-105"
+              className="inline-flex items-center gap-2 rounded-xl bg-[#00AEEF] px-6 py-3.5 text-sm sm:text-base font-bold text-[#060D1A] shadow-lg shadow-[#00AEEF]/25 hover:bg-[#38BDF8] transition-all hover:-translate-y-0.5"
             >
-              View My Work
+              <span>ดูผลงาน / View Projects</span>
+              <FiArrowRight />
             </a>
+
+            <button
+              type="button"
+              onClick={onOpenChat}
+              className="inline-flex items-center gap-2 rounded-xl border border-[#00AEEF]/50 bg-[#0A192F]/80 px-6 py-3.5 text-sm sm:text-base font-semibold text-[#38BDF8] hover:bg-[#00AEEF]/15 transition-all hover:-translate-y-0.5"
+            >
+              <FiMessageSquare />
+              <span>คุยกับ AI Bot ของผม</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={onOpenBrief}
+              className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-5 py-3.5 text-sm font-medium text-slate-200 hover:border-[#00AEEF]/45 hover:text-white transition-all hover:-translate-y-0.5"
+            >
+              <FiFileText className="text-emerald-400" />
+              <span>Quick Brief</span>
+            </button>
           </motion.div>
         </div>
 
-        {/* Right profile card */}
-        <motion.div className="mt-12 md:mt-0 w-full flex justify-center md:justify-end" variants={itemVariantsRight}>
+        {/* Right Profile Card (with min-h-[400px] fix) */}
+        <motion.div
+          className="w-full max-w-sm flex justify-center lg:justify-end"
+          variants={itemVariantsRight}
+        >
           <Tilt
-            tiltMaxAngleX={10}
-            tiltMaxAngleY={10}
+            tiltMaxAngleX={8}
+            tiltMaxAngleY={8}
             glareEnable
-            glareMaxOpacity={0.15}
+            glareMaxOpacity={0.12}
             glarePosition="all"
-            scale={1.05}
+            scale={1.02}
           >
-            <div
-              className="relative w-80 lg:w-96 mx-auto h-auto min-h[400px]
-                         bg-white/10 backdrop-blur-xl rounded-2xl shadow-lg
-                         border border-white/20 p-6 flex flex-col items-center
-                         text-center text-slate-200"
-            >
-              <div className="w-40 h-40 rounded-full overflow-hidden border-4 border-sky-400 mb-4 shadow-md">
-                <img src="/itme.png" alt="Pattle Profile" className="w-full h-full object-cover" />
+            <div className="relative w-80 sm:w-96 min-h-[400px] rounded-2xl border border-[#00AEEF]/25 bg-[#0A192F]/80 backdrop-blur-xl p-6 shadow-2xl shadow-[#00AEEF]/10 flex flex-col items-center text-center">
+              <div className="w-36 h-36 rounded-full overflow-hidden border-2 border-[#00AEEF] p-1 bg-[#060D1A] mb-5 shadow-lg shadow-[#00AEEF]/20">
+                <img
+                  src="/itme.png"
+                  alt={profileData.fullName}
+                  className="w-full h-full rounded-full object-cover"
+                />
               </div>
 
-              <h3 className="text-2xl font-bold text-slate-100">Patchararak Tisara</h3>
-              <p className="text-md text-sky-400 font-medium">I am passionate about design and programming.</p>
+              <span className="font-mono text-[11px] uppercase tracking-widest text-[#38BDF8] mb-1">
+                AI Agent Builder Intern
+              </span>
+              <h2 className="text-2xl font-bold text-slate-100">
+                {profileData.fullName}
+              </h2>
+              <p className="text-sm text-slate-300 mt-1">
+                {profileData.education}
+              </p>
 
-              <div className="flex items-center justify-center gap-2 text-slate-400 text-sm mt-2">
-                <FaMapMarkerAlt />
-                <span>Phrae, Thailand</span>
+              <div className="flex items-center justify-center gap-2 font-mono text-slate-400 text-xs mt-3">
+                <FaMapMarkerAlt className="text-[#00AEEF]" />
+                <span>
+                  {profileData.location} · {profileData.coordinates}
+                </span>
               </div>
 
               <div className="flex-grow" />
-              <div className="w-full">
-                <div className="flex justify-center gap-5 mb-4">
+
+              <div className="w-full pt-4 border-t border-white/10 mt-5">
+                <div className="flex justify-center gap-6">
                   <a
-                    href="https://github.com/PCPzen"
-                    className="text-slate-300 hover:text-sky-400 transition-colors"
+                    href={profileData.socials.github}
+                    className="text-slate-300 hover:text-[#38BDF8] transition-colors"
                     aria-label="GitHub"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <FaGithub size={24} />
+                    <FaGithub size={22} />
                   </a>
                   <a
-                    href="https://www.facebook.com/phatchararak.minimy"
-                    className="text-slate-300 hover:text-sky-400 transition-colors"
+                    href={profileData.socials.facebook}
+                    className="text-slate-300 hover:text-[#38BDF8] transition-colors"
                     aria-label="Facebook"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <FaFacebook size={24} />
+                    <FaFacebook size={22} />
                   </a>
                   <a
-                    href="https://www.instagram.com/pattle___/"
-                    className="text-slate-300 hover:text-sky-400 transition-colors"
+                    href={profileData.socials.instagram}
+                    className="text-slate-300 hover:text-[#38BDF8] transition-colors"
                     aria-label="Instagram"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <FaInstagram size={24} />
+                    <FaInstagram size={22} />
                   </a>
                 </div>
               </div>

@@ -1,123 +1,123 @@
-// src/components/Skills.tsx
-
 import { motion } from "framer-motion";
-
-// 1. Import ไอคอนทักษะที่คุณต้องการโชว์
-// (คุณสามารถเพิ่ม/ลบ ได้ตามต้องการจาก 'react-icons/si')
 import {
-  SiReact, SiTypescript, SiJavascript, SiTailwindcss, SiNodedotjs, SiGit,
-  SiFigma, SiVite, SiHtml5, SiCss3, SiMysql, SiPhp, SiBootstrap, SiLua, SiArduino,
+  FiCpu,
+  FiMessageCircle,
+  FiTerminal,
+  FiLayers,
+  FiZap,
+  FiGlobe,
+  FiShield,
+} from "react-icons/fi";
+import {
+  SiPhp,
+  SiGit,
+  SiVite,
+  SiFigma,
+  SiThreedotjs,
+  SiPython,
+  SiNextdotjs,
+  SiPrisma,
+  SiSupabase,
+  SiGithubactions,
 } from "react-icons/si";
-import { VscVscode } from "react-icons/vsc"; // ⬅️ VS Code มาจากชุด vsc
+import type { IconType } from "react-icons";
+import { skillCategories } from "../data/skills";
 
-// 2. สร้าง "คลังทักษะ" ของคุณ (อัปเดตใหม่)
-// เราจะกำหนดไอคอน, ชื่อ, และ "สี" สำหรับเอฟเฟกต์เรืองแสง
-const skillsList = [
-  { name: "HTML5", Icon: SiHtml5, color: "#E34F26" },
-  { name: "CSS3", Icon: SiCss3, color: "#1572B6" },
-  { name: "JavaScript", Icon: SiJavascript, color: "#F7DF1E" },
-  { name: "TypeScript", Icon: SiTypescript, color: "#3178C6" },
-  { name: "React", Icon: SiReact, color: "#61DAFB" },
-  { name: "Tailwind CSS", Icon: SiTailwindcss, color: "#06B6D4" },
-  { name: "Bootstrap", Icon: SiBootstrap, color: "#7952B3" },
-  { name: "PHP", Icon: SiPhp, color: "#777BB4" },
-  { name: "Node.js", Icon: SiNodedotjs, color: "#339933" },
-  { name: "MySQL", Icon: SiMysql, color: "#4479A1" },
-  { name: "Git", Icon: SiGit, color: "#F05032" },
-  { name: "Figma", Icon: SiFigma, color: "#F24E1E" },
-  { name: "Vite", Icon: SiVite, color: "#646CFF" },
-  { name: "Visual Studio Code", Icon: VscVscode, color: "#007ACC" },
-  { name: "Lua", Icon: SiLua, color: "#2C2D72" },
-  { name: "Arduino IDE", Icon: SiArduino, color: "#00979D" },
-];
-// --- Animation Variants ---
-// 3. Variants สำหรับ "Container" (Grid)
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { 
-      staggerChildren: 0.1, // สั่งให้ "ลูก" (การ์ด) ทยอยปรากฏ ห่างกัน 0.1 วินาที
-      delayChildren: 0.2,
-    },
-  },
-};
-
-// 4. Variants สำหรับ "Item" (การ์ดแต่ละใบ)
-const itemVariants = {
-  hidden: { opacity: 0, y: 50 }, // เริ่มต้นที่: ล่องหน และอยู่ต่ำกว่าตำแหน่งจริง 50px
-  visible: { 
-    opacity: 1, 
-    y: 0, // เคลื่อนที่กลับมาที่ตำแหน่งจริง
-    transition: { duration: 0.6 } 
-  },
+const ICON_MAP: Record<string, IconType> = {
+  bot: FiCpu,
+  sparkles: FiZap,
+  cpu: FiLayers,
+  message: FiMessageCircle,
+  shield: FiShield,
+  python: SiPython,
+  actions: SiGithubactions,
+  webhook: FiGlobe,
+  nextjs: SiNextdotjs,
+  prisma: SiPrisma,
+  supabase: SiSupabase,
+  php: SiPhp,
+  git: SiGit,
+  vite: SiVite,
+  figma: SiFigma,
+  three: SiThreedotjs,
 };
 
 const Skills = () => {
   return (
-    // 5. อย่าลืม id="skills" เพื่อให้ Bot ทำงานได้!
-    <section id="skills" className="py-20 md:py-32">
-      {/* --- หัวข้อ (สไตล์เดียวกับ About Me) --- */}
-      <motion.h2
-        className="text-6xl lg:text-7xl font-extrabold text-slate-100 mb-16
-                   relative inline-block text-center w-full"
-        initial={{ opacity: 0, y: -50 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        viewport={{ once: true }}
-      >
-        <span className="text-sky-400"></span>
-        MY SKILLS
-        <span className="text-sky-400"></span>
-        <motion.div
-          className="absolute bottom-[-10px] left-1/2 -translate-x-1/2 w-1/2 md:w-1/4 h-1 bg-sky-500 rounded-full 
-                     shadow-lg shadow-sky-500/50"
-          initial={{ width: 0 }}
-          whileInView={{ width: "25%" }}
-          transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
-          viewport={{ once: true }}
-        />
-      </motion.h2>
+    <section id="skills" className="py-20 md:py-28">
+      <div className="mb-12">
+        <span className="font-mono text-xs uppercase tracking-widest text-[#38BDF8]">
+          02 / CAPABILITIES
+        </span>
+        <h2 className="mt-2 text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-100">
+          AI, Automation &amp; <span className="text-[#00AEEF]">Tech Stack</span>
+        </h2>
+        <p className="mt-3 max-w-2xl text-slate-400 text-sm sm:text-base">
+          จัดกลุ่มทักษะแบบ Bento Grid เพื่อสะท้อนการทำงานสาย AI Agent Builder ตั้งแต่การออกแบบ Flow ไปจนถึงการเชื่อมต่อ API และฐานข้อมูล
+        </p>
+      </div>
 
-      {/* --- 6. "Grid" ที่โชว์การ์ดทักษะ --- */}
-      <motion.div 
-        className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 md:gap-8 max-w-6xl mx-auto"
-        variants={containerVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.2 }}
-      >
-        {skillsList.map((skill) => (
+      {/* 4-Category Bento Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+        {skillCategories.map((category, catIdx) => (
           <motion.div
-            key={skill.name}
-            className="group relative flex flex-col items-center justify-center p-6 
-                       bg-white/5 backdrop-blur-lg rounded-2xl 
-                       shadow-lg border border-white/10
-                       transition-all duration-300 hover:shadow-sky-500/20 hover:border-sky-500/30"
-            variants={itemVariants}
-            // 7. ส่ง "สี" เข้าไปใน CSS Variable
-            style={{ '--skill-color': skill.color } as React.CSSProperties}
+            key={category.id}
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, delay: catIdx * 0.08 }}
+            viewport={{ once: true, amount: 0.15 }}
+            className={`${category.spanClass} rounded-3xl border border-white/10 bg-[#0A192F]/75 backdrop-blur-xl p-6 sm:p-7 hover:border-[#00AEEF]/40 transition-colors`}
           >
-            {/* 8. "ไอคอน" ที่จะลอยและเรืองแสง */}
-            <div className="transition-all duration-300 group-hover:-translate-y-2 group-hover:scale-110">
-              {skill.Icon ? (
-                <skill.Icon
-                  size={56}
-                  className="transition-all duration-300 group-hover:drop-shadow-[0_0_10px_var(--skill-color)]"
-                  style={{ color: skill.color }}
-                />
-              ) : (
-                <div className="w-14 h-14 rounded bg-slate-700" />
-              )}
+            <div className="flex items-start justify-between gap-4 mb-5">
+              <div>
+                <h3 className="text-xl font-bold text-slate-100">{category.title}</h3>
+                <p className="text-xs sm:text-sm text-slate-400 mt-1">{category.subtitle}</p>
+              </div>
+              <span
+                className="h-2.5 w-2.5 rounded-full shrink-0 mt-2"
+                style={{
+                  backgroundColor: category.accent,
+                  boxShadow: `0 0 12px ${category.accent}`,
+                }}
+              />
             </div>
-            {/* 11. "ชื่อทักษะ" */}
-            <p className="mt-4 font-mono-tech text-slate-200 text-lg">{skill.name}</p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              {category.skills.map((skill) => {
+                const Icon = ICON_MAP[skill.iconKey] ?? FiTerminal;
+                return (
+                  <div
+                    key={skill.name}
+                    className="group rounded-2xl border border-white/10 bg-[#060D1A]/75 p-4 hover:border-[#00AEEF]/45 transition-all"
+                  >
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <div className="flex items-center gap-2.5">
+                        <div
+                          className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/5 border border-white/10 transition-transform group-hover:scale-105"
+                          style={{ color: skill.color }}
+                        >
+                          <Icon size={18} />
+                        </div>
+                        <span className="font-semibold text-sm text-slate-100">
+                          {skill.name}
+                        </span>
+                      </div>
+                      <span className="font-mono text-[10px] rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-slate-300">
+                        {skill.level}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      {skill.description}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
           </motion.div>
         ))}
-      </motion.div>
+      </div>
     </section>
   );
 };
 
 export default Skills;
-

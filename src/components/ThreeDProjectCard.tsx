@@ -1,122 +1,92 @@
-import { motion } from 'framer-motion';
-
-export interface ProjectData {
-  id: number;
-  image: string;
-  title: string;
-  preview?: string;
-  fullDescription?: string;
-  description?: string;
-  techStack: string[];
-  link?: string;
-}
+import { motion } from "framer-motion";
+import { FiGitBranch, FiExternalLink } from "react-icons/fi";
+import type { ProjectData } from "../types";
 
 interface ProjectCardProps {
   project: ProjectData;
   onClick: () => void;
-  layoutId: string;
-  isCenter: boolean;
-  scale: number;
-  opacity: number;
 }
 
-export default function ThreeDProjectCard({
-  project,
-  onClick,
-  layoutId,
-  isCenter,
-  scale,
-  opacity,
-}: ProjectCardProps) {
-  const outerText = project.preview ?? project.description ?? '';
+const CATEGORY_STYLES: Record<ProjectData["category"], string> = {
+  "AI & Chatbot": "border-[#00AEEF]/50 bg-[#00AEEF]/15 text-[#38BDF8]",
+  Automation: "border-emerald-400/40 bg-emerald-500/15 text-emerald-300",
+  "Web System": "border-indigo-400/40 bg-indigo-500/15 text-indigo-300",
+};
 
+export default function ThreeDProjectCard({ project, onClick }: ProjectCardProps) {
   return (
-    <motion.div
-      layoutId={layoutId}
-      onClick={onClick}
-      className="
-        relative rounded-2xl overflow-hidden cursor-pointer
-        border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl
-        w-[300px] md:w-[340px]
-        h-auto md:h-[430px]      /* มือถือปล่อยสูงอัตโนมัติ */
-        will-change-transform
-      "
-      style={{ scale, opacity, transformOrigin: '50% 90%' }}
+    <motion.article
+      layout
+      initial={{ opacity: 0, y: 18 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.96 }}
       whileHover={{ y: -6 }}
-      transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+      transition={{ duration: 0.25 }}
+      onClick={onClick}
+      className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0A192F]/85 backdrop-blur-xl shadow-xl hover:border-[#00AEEF]/50 hover:shadow-[#00AEEF]/15 transition-all cursor-pointer"
     >
-      {/* รูปภาพ */}
-      <motion.img
-        layoutId={`${layoutId}-image`}
-        src={project.image}
-        alt={project.title}
-        className="
-          block w-full object-cover
-          h-44 sm:h-48 md:absolute md:inset-0 md:h-1/2
-        "
-      />
+      {/* Thumbnail */}
+      <div className="relative h-48 w-full overflow-hidden bg-[#060D1A]">
+        <img
+          src={project.image}
+          alt={project.title}
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0A192F] via-transparent to-transparent" />
 
-      {/* เฉพาะเดสก์ท็อป: พื้นทึบครึ่งล่างทับรูปเพื่อให้อ่านง่าย */}
-      <div className="hidden md:block absolute top-1/2 left-0 right-0 bottom-0 bg-slate-900/70" />
+        <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2">
+          <span
+            className={`rounded-full border px-2.5 py-0.5 font-mono text-[11px] font-semibold backdrop-blur-md ${
+              CATEGORY_STYLES[project.category]
+            }`}
+          >
+            {project.category}
+          </span>
 
-      {/* เนื้อหา
-          - มือถือ: กล่องพื้นหลังทึบวาง 'ถัดจากรูป' (ไม่ absolute)
-          - เดสก์ท็อป: วางชิดล่างแบบ absolute (ทับครึ่งล่าง)
-      */}
-      <div
-        className="
-          p-5
-          bg-slate-900/70 md:bg-transparent
-          md:absolute md:inset-x-0 md:bottom-0
-        "
-      >
-        <motion.h3
-          layoutId={`${layoutId}-title`}
-          className="
-            text-center font-extrabold text-sky-300
-            text-xl sm:text-2xl leading-tight
-          "
-        >
+          {project.featured && (
+            <span className="rounded-full border border-amber-400/40 bg-amber-500/20 px-2.5 py-0.5 font-mono text-[10px] font-semibold text-amber-300 backdrop-blur-md">
+              Featured
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="flex flex-1 flex-col p-5">
+        <h3 className="text-lg font-bold text-slate-100 group-hover:text-[#38BDF8] transition-colors line-clamp-2">
           {project.title}
-        </motion.h3>
+        </h3>
 
-        <motion.p
-          layoutId={`${layoutId}-description`}
-          className="
-            mt-2 text-center text-slate-200/90 leading-snug
-            text-sm sm:text-[15px]
-            line-clamp-3
-          "
-        >
-          {outerText}
-        </motion.p>
+        <p className="mt-2 text-sm text-slate-400 leading-relaxed line-clamp-3 flex-1">
+          {project.preview}
+        </p>
 
-        <div className="mt-3 flex flex-wrap justify-center gap-2">
-          {project.techStack.slice(0, 4).map((t) => (
+        {/* Tech Stack */}
+        <div className="mt-4 flex flex-wrap gap-1.5">
+          {project.techStack.slice(0, 3).map((tech) => (
             <span
-              key={t}
-              className="bg-sky-500/20 text-sky-200 rounded-full px-3 py-0.5 text-xs"
+              key={tech}
+              className="rounded-md border border-white/10 bg-[#060D1A]/80 px-2 py-0.5 font-mono text-[11px] text-slate-300"
             >
-              {t}
+              {tech}
             </span>
           ))}
+          {project.techStack.length > 3 && (
+            <span className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 font-mono text-[11px] text-slate-400">
+              +{project.techStack.length - 3}
+            </span>
+          )}
         </div>
 
-        {project.link && isCenter && (
-          <a
-            href={project.link}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
-            className="
-              mt-4 block w-full rounded-lg bg-sky-600 py-2 text-center
-              text-white font-semibold hover:bg-sky-500
-            "
-          >
-            View Project
-          </a>
-        )}
+        {/* Card Footer */}
+        <div className="mt-5 flex items-center justify-between border-t border-white/10 pt-3.5 text-xs font-semibold text-[#38BDF8]">
+          <span className="inline-flex items-center gap-1.5">
+            <FiGitBranch size={14} />
+            <span>View Architecture Flow</span>
+          </span>
+          {project.link && <FiExternalLink size={14} className="text-slate-400 group-hover:text-[#38BDF8]" />}
+        </div>
       </div>
-    </motion.div>
+    </motion.article>
   );
 }
